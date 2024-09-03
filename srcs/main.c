@@ -29,7 +29,6 @@ int main(void)
 		case 1: // Executed as root - Create service
 			write(1, "Executed as root user\n", 23);
 			copy_binary();
-			create_service();
 			skeleton_daemon();
 			break ;
 		case 0: // Running as service - Starts server
