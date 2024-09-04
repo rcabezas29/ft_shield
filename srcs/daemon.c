@@ -1,26 +1,24 @@
 #include <ft_shield.h>
 #include <stdio.h>
 
-void	copy_binary(void)
+int	check_lock_file(void)
 {
-	char	exec_path[256];
-	ssize_t	len = readlink("/proc/self/exe", exec_path, sizeof(exec_path) - 1);
-	exec_path[len] = '\0';
-	int	origin, bin_fd;
-
-	if ((origin = open(exec_path, O_RDONLY)) == -1)
-		exit(1);
-	if ((bin_fd = creat("/usr/bin/ft_shield", 0700)) == -1)
+	int	lfd = open(LOCK_FILE, O_CREAT | O_RDWR, 0666);
+	if (lfd == -1)
+		return 0;
+	if (flock(lfd, LOCK_EX | LOCK_NB) != 0)
 	{
-		close(origin);
-		exit(1);
+		close(lfd);
+		return 0;
 	}
-	// off_t bytesCopied = 0;
-	struct stat fileinfo = {0};
-	fstat(origin, &fileinfo);
-	sendfile(bin_fd, origin, NULL, fileinfo.st_size);
-	close(origin);
-	close(bin_fd);
+	return lfd;
+}
+
+void	remove_lock_file(int fd)
+{
+	flock(fd, LOCK_UN);
+	close(fd);
+	remove(LOCK_FILE);
 }
 
 void	skeleton_daemon(void)
@@ -34,9 +32,6 @@ void	skeleton_daemon(void)
 		exit(EXIT_SUCCESS);
 	if (setsid() < 0)
 		exit(EXIT_FAILURE);
-	// signal(SIGINT, SIG_IGN);
-	// signal(SIGHUP, SIG_IGN);
-	// signal(SIGTERM, SIG_IGN);
 	pid = fork();
 	if (pid < 0)
 		exit(EXIT_FAILURE);

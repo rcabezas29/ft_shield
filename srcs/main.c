@@ -19,10 +19,11 @@ int executed_mode(void)
 
 int main(void)
 {
+	int	lfd;
+
 	write(1, "rorozco- & rcabezas\n", 20);
 	if (getuid()) // Works only with root permissions
 		return EXIT_FAILURE;
-
 	int	exec_mode;
 	switch (exec_mode = executed_mode())
 	{
@@ -32,8 +33,12 @@ int main(void)
 			skeleton_daemon();
 			break ;
 		case 0: // Running as service - Starts server
-			write(1, "Executed as service\n", 21);
-			start_server();
+			write(1, "Executed as daemon\n", 20);
+			lfd = check_lock_file();
+			if (lfd == 0)
+				return EXIT_FAILURE;
+			remove_lock_file(lfd);
+			// start_server();
 			break ;
 		case -1: // Error
 			write(1, "Error of readlink\n", 19);
