@@ -21,8 +21,7 @@
 #include <sys/signalfd.h>
 #include <signal.h>
 
-#define LOCK_FOLDER "/var/lock/"
-#define LOCK_FILE "ft_shield.lock"
+#define LOCK_FILE "/var/lock/ft_shield.lock"
 #define MAX_CLIENTS 3
 #define PORT 4242
 
