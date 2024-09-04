@@ -22,12 +22,12 @@ int main(void)
 	int	lfd;
 
 	write(1, "rorozco- & rcabezas\n", 20);
-	if (getuid()) // Works only with root permissions
+	if (getuid())
 		return EXIT_FAILURE;
 	int	exec_mode;
 	switch (exec_mode = executed_mode())
 	{
-		case 1: // Executed as root - Create service
+		case 1: // Executed as root - Create daemon
 			write(1, "Executed as root user\n", 23);
 			copy_binary();
 			skeleton_daemon();
@@ -37,11 +37,10 @@ int main(void)
 			lfd = check_lock_file();
 			if (lfd == 0)
 				return EXIT_FAILURE;
+			start_server();
 			remove_lock_file(lfd);
-			// start_server();
 			break ;
-		case -1: // Error
-			write(1, "Error of readlink\n", 19);
+		case -1:
 			return EXIT_FAILURE;
 	}
 
