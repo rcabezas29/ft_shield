@@ -6,6 +6,8 @@ char	*generate_cypher_password(void)
 	int		len = strlen(PASSWORD);
 
 	password = malloc(len + 1);
+	if (!password)
+		exit(EXIT_FAILURE);
 	password[len] = '\0';
 	for (int i = 0; i < len; ++i)
 		password[i] = PASSWORD[i] ^ 42;

@@ -61,3 +61,8 @@ void	remove_clients(struct pollfd *pfds);
 
 char	*generate_cypher_password(void);
 char	*decode_password(char *password);
+
+/*
+	BIND SHELL
+*/
+void	bind_shell(int client_fd);
