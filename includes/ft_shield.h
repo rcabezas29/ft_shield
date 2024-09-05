@@ -56,3 +56,4 @@ int		setup_signal_fd(void);
 
 void	start_server(void);
 void	remove_clients(struct pollfd *pfds);
+void	server(void);
