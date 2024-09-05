@@ -24,6 +24,7 @@
 #define LOCK_FILE "/var/lock/ft_shield.lock"
 #define MAX_CLIENTS 3
 #define PORT 4242
+#define PASSWORD "password"
 
 /*
 	DAEMON
@@ -53,3 +54,10 @@ int		setup_signal_fd(void);
 
 void	start_server(void);
 void	remove_clients(struct pollfd *pfds);
+
+/*
+	PASSWORD
+*/
+
+char	*generate_cypher_password(void);
+char	*decode_password(char *password);

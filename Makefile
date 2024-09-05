@@ -50,7 +50,7 @@ CFLAGS += -I./$(INC_DIR)
 all: $(NAME)
 
 $(NAME): $(OBJS) $(LDLIBS)
-	$(CC) $(CFLAGS) -o $@ $(OBJS) $(LDFLAGS)
+	$(CC) $(CFLAGS) -D PASSWORD=password -o $@ $(OBJS) $(LDFLAGS)
 
 ifeq ($(UNAME_S),Linux)
 sanitize:: CFLAGS += -g3 -fsanitize=address -fsanitize=leak -fsanitize=undefined -fsanitize=bounds -fsanitize=null
