@@ -6,8 +6,7 @@ int main(void)
 	char exec_path[256];
 
 	if (getuid())
-		return EXIT_FAILURE;
-
+		return (EXIT_FAILURE);
 	if ((len = readlink("/proc/self/exe", exec_path, sizeof(exec_path) - 1)) < 0)
 		return (EXIT_FAILURE);
 	exec_path[len] = '\0';
