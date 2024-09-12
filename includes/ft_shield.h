@@ -30,9 +30,16 @@
 
 typedef struct s_client
 {
-	struct pollfd pfd;
 	bool logged;
 } t_client;
+
+typedef struct s_server
+{
+	int server_socket;
+	int connected_clients;
+	t_client clients[MAX_CLIENTS];
+	struct pollfd pfds[MAX_CLIENTS + 1];
+} t_server;
 
 /*
 	DAEMON

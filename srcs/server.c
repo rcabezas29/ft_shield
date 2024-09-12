@@ -1,83 +1,76 @@
 #include <ft_shield.h>
 
-static void remove_client(t_client *clients, int *n_clients, int client_fd)
+static void remove_client(t_server *server, int client_fd)
 {
-    dprintf(2, "REMOVING: %d\n", client_fd);
-    close(client_fd);
-    for (int i = 0; i < MAX_CLIENTS + 1; i++) {
-        if (clients[i].pfd.fd == client_fd) {
-            clients[i].pfd.fd = -1;
-            clients[i].logged = false;
-            break;
+    printf("[ REMOVING ] client: %d\n", client_fd);
+    for (int i = 0; i < MAX_CLIENTS; i++) {
+        if (server->pfds[i + 1].fd == client_fd) {
+            close(client_fd);
+            server->pfds[i + 1] = (struct pollfd){-1, POLLIN, 0};
+            server->clients[i].logged = false;
+            server->connected_clients--;
+            return ;
         }
     }
-    (*n_clients)--;
-    dprintf(2, "LESS_CLIENT: %d -> %d\n", client_fd, *n_clients);
 }
 
-void _handle_client_input(t_client *clients, int *n_clients, int client_fd)
+void _handle_client_input(t_server *server, int client_fd)
 {
     int len_read;
 	char buffer[BUFFER_SIZE];
 
 	bzero(&buffer, BUFFER_SIZE);
 	if ((len_read = recv(client_fd, buffer, BUFFER_SIZE, 0)) <= 0) {
-        remove_client(clients, n_clients, client_fd);
+        remove_client(server, client_fd);
         return ;
     }
-    dprintf(2, "FROM_CLIENT: %d -> %s\n", *n_clients, buffer);
+    printf("[ RECEIVED ] from client: %s\n", buffer);
 
 }
 
-static void _handle_connection(t_client *clients, int *n_clients)
+static void _handle_connection(t_server *server)
 {
     struct sockaddr_in client;
 	socklen_t client_len = sizeof(client);
     int client_fd;
 
-    if ((client_fd = accept(clients[0].pfd.fd, (struct sockaddr *)&client, &client_len)) == -1)
+    if ((client_fd = accept(server->server_socket, (struct sockaddr *)&client, &client_len)) == -1)
         return ;
-    dprintf(2, "CLIENTS: %d\n", *n_clients);
-    if (*n_clients >= MAX_CLIENTS)
+    if (server->connected_clients >= MAX_CLIENTS)
     {
         send(client_fd, "ft_shield: Connection refused\r\n", 32, 0);
         close(client_fd);
         return ;
     }
-    for (int i = 0; i < MAX_CLIENTS + 1; i++) {
-        if (clients[i].pfd.fd == -1) {
-            clients[i] = (t_client){(struct pollfd){client_fd, POLLIN, 0}, 0};
+    for (int i = 0; i < MAX_CLIENTS; i++) {
+        if (server->pfds[i + 1].fd == -1) {
+            server->pfds[i + 1].fd = client_fd;
+            server->pfds[i].events = POLLIN;
+            server->clients[i] = (t_client){0};
+            server->connected_clients++;
             break;
         }
     }
-    (*n_clients)++;
-    dprintf(2, "NEW_CLIENT: %d -> %d\n", client_fd, *n_clients);
+    printf("NEW_CLIENT: %d -> %d\n", client_fd, server->connected_clients);
     // if (send(client_fd, "Password: ", 10, 0) == -1)
         // remove_client(clients, n_clients, client_fd);
 }
 
-void loop_server(t_client *clients, int server_socket)
+void loop_server(t_server *server)
 {
-    int n_clients;
-
-    n_clients = 0;
-    clients[0] = (t_client){(struct pollfd){server_socket, POLLIN, 0}, 1};
     while (1)
     {
-        if (poll((struct pollfd *)clients, n_clients + 1, -1) == -1)
+        if (poll(server->pfds, server->connected_clients + 1, -1) <= 0)
             break ;
-        for (int i = 0; i < n_clients + 1; i++)
+        for (int i = 0; i < server->connected_clients + 1; i++)
         {
-            if (clients[i].pfd.revents & POLLIN)
+            if (server->pfds[i].revents & POLLIN)
             {
-                if (clients[i].pfd.fd == server_socket) {
-                    _handle_connection(clients, &n_clients);
-                }
+                if (server->pfds[i].fd == server->server_socket)
+                    _handle_connection(server);
                 else
-                    _handle_client_input(clients, &n_clients, clients[i].pfd.fd);
+                    _handle_client_input(server, server->pfds[i].fd);
             }
-            else if (clients[i].pfd.revents & POLLHUP)
-                remove_client(clients, &n_clients, clients[i].pfd.fd);
         }
     }
 }
@@ -112,22 +105,22 @@ static int setup_server(void)
     return server_socket;
 }
 
-static void reset_clients(t_client *clients)
+static void reset_clients(t_server *server)
 {
-    for (int i = 0; i < MAX_CLIENTS + 1; i++)
+    for (int i = 0; i < MAX_CLIENTS; i++)
     {
-        clients[i].pfd.fd = -1;
-        clients[i].pfd.events = 0;
-        clients[i].logged = false;
+        server->clients[i].logged = false;
+        server->pfds[i + 1] = (struct pollfd){-1, POLLIN, 0};;
     }
 }
 
 void server(void)
 {
-    int server_socket;
-    t_client clients[MAX_CLIENTS + 1];
+    t_server server;
+    server.connected_clients = 0;
 
-    reset_clients(clients);
-    server_socket = setup_server();
-    loop_server(clients, server_socket);
+    reset_clients(&server);
+    server.server_socket = setup_server();
+    server.pfds[0] = (struct pollfd){server.server_socket, POLLIN, 0};
+    loop_server(&server);
 }
