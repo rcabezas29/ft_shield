@@ -26,6 +26,13 @@
 #define SERVICE_PATH "/etc/systemd/system/ft_shield.service"
 #define MAX_CLIENTS 3
 #define PORT 4242
+#define BUFFER_SIZE 1024
+
+typedef struct s_client
+{
+	struct pollfd pfd;
+	bool logged;
+} t_client;
 
 /*
 	DAEMON
