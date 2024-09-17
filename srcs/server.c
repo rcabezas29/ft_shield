@@ -4,10 +4,10 @@ static void remove_client(t_server *server, int client_fd)
 {
     printf("[ REMOVING ] client: %d\n", client_fd);
     for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (server->pfds[i + 1].fd == client_fd) {
+        if (server->pfds[i].fd == client_fd) {
             close(client_fd);
-            server->pfds[i + 1] = (struct pollfd){-1, POLLIN, 0};
-            server->clients[i].logged = false;
+            server->pfds[i] = (struct pollfd){-1, POLLIN, 0};
+            server->clients[i].logged = 0;
             server->connected_clients--;
             return ;
         }
@@ -24,14 +24,18 @@ void _handle_client_input(t_server *server, int pfd_index)
         remove_client(server, server->pfds[pfd_index].fd);
         return ;
     }
-    buffer[len_read] = '\0';
-    printf("[ RECEIVED ] from client: %s\n", buffer);
-    if (!server->clients[pfd_index - 1].logged)
+    buffer[len_read - 1] = '\0';
+    if (!server->clients[pfd_index].logged)
     {
             unsigned char password_hash[SHA256_DIGEST_LENGTH];
             hash_sha256(buffer, password_hash);
             if (compare_hashes(password_hash)) {
-                server->clients[pfd_index - 1].logged = 1;
+                server->clients[pfd_index].logged = 1;
+            }
+            else
+            {
+                if (send(server->pfds[pfd_index].fd, "Password: ", 10, 0) == -1)
+                    remove_client(server, server->pfds[pfd_index].fd);
             }
     } else{
         printf("YOU'RE LOGGED\n");
@@ -53,8 +57,8 @@ static void _handle_connection(t_server *server)
         return ;
     }
     for (int i = 0; i < MAX_CLIENTS; i++) {
-        if (server->pfds[i + 1].fd == -1) {
-            server->pfds[i + 1].fd = client_fd;
+        if (server->pfds[i].fd == -1) {
+            server->pfds[i].fd = client_fd;
             server->pfds[i].events = POLLIN;
             server->clients[i] = (t_client){0};
             server->connected_clients++;
@@ -120,7 +124,7 @@ static void reset_clients(t_server *server)
     for (int i = 0; i < MAX_CLIENTS; i++)
     {
         server->clients[i].logged = false;
-        server->pfds[i + 1] = (struct pollfd){-1, POLLIN, 0};;
+        server->pfds[i] = (struct pollfd){-1, POLLIN, 0};;
     }
 }
 
