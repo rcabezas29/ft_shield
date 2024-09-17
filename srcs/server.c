@@ -14,18 +14,28 @@ static void remove_client(t_server *server, int client_fd)
     }
 }
 
-void _handle_client_input(t_server *server, int client_fd)
+void _handle_client_input(t_server *server, int pfd_index)
 {
     int len_read;
 	char buffer[BUFFER_SIZE];
 
 	bzero(&buffer, BUFFER_SIZE);
-	if ((len_read = recv(client_fd, buffer, BUFFER_SIZE, 0)) <= 0) {
-        remove_client(server, client_fd);
+	if ((len_read = recv(server->pfds[pfd_index].fd, buffer, BUFFER_SIZE, 0)) <= 0) {
+        remove_client(server, server->pfds[pfd_index].fd);
         return ;
     }
+    buffer[len_read] = '\0';
     printf("[ RECEIVED ] from client: %s\n", buffer);
-
+    if (!server->clients[pfd_index - 1].logged)
+    {
+            unsigned char password_hash[SHA256_DIGEST_LENGTH];
+            hash_sha256(buffer, password_hash);
+            if (compare_hashes(password_hash)) {
+                server->clients[pfd_index - 1].logged = 1;
+            }
+    } else{
+        printf("YOU'RE LOGGED\n");
+    }
 }
 
 static void _handle_connection(t_server *server)
@@ -52,8 +62,8 @@ static void _handle_connection(t_server *server)
         }
     }
     printf("NEW_CLIENT: %d -> %d\n", client_fd, server->connected_clients);
-    // if (send(client_fd, "Password: ", 10, 0) == -1)
-        // remove_client(clients, n_clients, client_fd);
+    if (send(client_fd, "Password: ", 10, 0) == -1)
+        remove_client(server, client_fd);
 }
 
 void loop_server(t_server *server)
@@ -69,7 +79,7 @@ void loop_server(t_server *server)
                 if (server->pfds[i].fd == server->server_socket)
                     _handle_connection(server);
                 else
-                    _handle_client_input(server, server->pfds[i].fd);
+                    _handle_client_input(server, i);
             }
         }
     }
