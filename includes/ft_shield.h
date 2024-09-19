@@ -29,6 +29,7 @@
 #define MAX_CLIENTS 3
 #define PORT 4242
 #define BUFFER_SIZE 1024
+#define SHELL_PORT "4242"
 
 typedef struct s_client
 {
@@ -71,13 +72,19 @@ int		setup_signal_fd(void);
 */
 
 void	start_server(void);
-void	remove_clients(struct pollfd *pfds);
+void	remove_client(t_server *server, int client_fd);
+void	send_to_client(t_server* server, int client_fd, char* buffer);
 
 /*
 	PASSWORD
 */
 void hash_sha256(const char *str, unsigned char outputBuffer[SHA256_DIGEST_LENGTH]);
-int compare_hashes(unsigned char *hash1);
+int check_password(unsigned char *hash1);
+
+/*
+	COMMANDS
+*/
+void handle_command(t_server* server, int client_fd, char* buffer);
 
 /*
 	BIND SHELL

