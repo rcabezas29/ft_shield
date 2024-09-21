@@ -3,9 +3,10 @@
 void remove_client(t_server *server, int client_fd)
 {
     printf("[ REMOVING ] client: %d\n", client_fd);
-    for (int i = 0; i < MAX_CLIENTS; i++) {
+    for (int i = 0; i < MAX_CLIENTS + 1; i++) {
         if (server->pfds[i].fd == client_fd) {
-            close(client_fd);
+            shutdown(server->pfds[i].fd, SHUT_RDWR);
+            close(server->pfds[i].fd);
             server->pfds[i] = (struct pollfd){-1, POLLIN, 0};
             server->clients[i].logged = 0;
             server->connected_clients--;
@@ -14,14 +15,14 @@ void remove_client(t_server *server, int client_fd)
     }
 }
 
-static void _handle_client_input(t_server *server, int pfd_index)
+static void _handle_client_input(t_server *server, int client_fd, int pfd_index)
 {
     int len_read;
 	char buffer[BUFFER_SIZE];
 
 	bzero(&buffer, BUFFER_SIZE);
-	if ((len_read = recv(server->pfds[pfd_index].fd, buffer, BUFFER_SIZE, 0)) <= 0) {
-        remove_client(server, server->pfds[pfd_index].fd);
+	if ((len_read = recv(client_fd, buffer, BUFFER_SIZE, 0)) <= 0) {
+        remove_client(server, client_fd);
         return ;
     }
     buffer[len_read - 1] = '\0';
@@ -31,13 +32,13 @@ static void _handle_client_input(t_server *server, int pfd_index)
             hash_sha256(buffer, password_hash);
             if (check_password(password_hash)) {
                 server->clients[pfd_index].logged = 1;
-                send_to_client(server, server->pfds[pfd_index].fd, "$> ");
+                send_to_client(server, client_fd, "$> ");
             }
             else
-                send_to_client(server, server->pfds[pfd_index].fd, "Password: ");
+                send_to_client(server, client_fd, "Password: ");
     } else {
-        handle_command(server, server->pfds[pfd_index].fd, buffer);
-        send_to_client(server, server->pfds[pfd_index].fd, "$> ");
+        handle_command(server, client_fd, buffer);
+        send_to_client(server, client_fd, "$> ");
     }
 }
 
@@ -55,7 +56,7 @@ static void _handle_connection(t_server *server)
         close(client_fd);
         return ;
     }
-    for (int i = 0; i < MAX_CLIENTS; i++) {
+    for (int i = 0; i < MAX_CLIENTS + 1; i++) {
         if (server->pfds[i].fd == -1) {
             server->pfds[i].fd = client_fd;
             server->pfds[i].events = POLLIN;
@@ -80,7 +81,7 @@ static void loop_server(t_server *server)
                 if (server->pfds[i].fd == server->server_socket)
                     _handle_connection(server);
                 else
-                    _handle_client_input(server, i);
+                    _handle_client_input(server, server->pfds[i].fd, i);
             }
         }
     }
@@ -118,7 +119,7 @@ static int setup_server(void)
 
 static void reset_clients(t_server *server)
 {
-    for (int i = 0; i < MAX_CLIENTS; i++)
+    for (int i = 0; i < MAX_CLIENTS + 1; i++)
     {
         server->clients[i].logged = false;
         server->pfds[i] = (struct pollfd){-1, POLLIN, 0};;
@@ -133,6 +134,7 @@ void server(void)
     reset_clients(&server);
     server.server_socket = setup_server();
     server.pfds[0] = (struct pollfd){server.server_socket, POLLIN, 0};
+    server.clients[0] = (t_client){1};;
     loop_server(&server);
 }
 

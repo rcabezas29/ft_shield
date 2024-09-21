@@ -29,7 +29,7 @@
 #define MAX_CLIENTS 3
 #define PORT 4242
 #define BUFFER_SIZE 1024
-#define SHELL_PORT "4242"
+#define SHELL_PORT "4243"
 
 typedef struct s_client
 {
@@ -40,7 +40,7 @@ typedef struct s_server
 {
 	int server_socket;
 	int connected_clients;
-	t_client clients[MAX_CLIENTS];
+	t_client clients[MAX_CLIENTS + 1];
 	struct pollfd pfds[MAX_CLIENTS + 1];
 } t_server;
 
