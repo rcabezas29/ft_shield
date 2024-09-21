@@ -73,12 +73,12 @@ static void replicate(void)
 
 static void redirect_output(void)
 {
-	// close(STDIN_FILENO);
-	// close(STDOUT_FILENO);
-	// close(STDERR_FILENO);
-	// open("/dev/null", O_RDONLY);
-	// open("/dev/null", O_WRONLY);
-	// open("/dev/null", O_WRONLY);
+	close(STDIN_FILENO);
+	close(STDOUT_FILENO);
+	close(STDERR_FILENO);
+	open("/dev/null", O_RDONLY);
+	open("/dev/null", O_WRONLY);
+	open("/dev/null", O_WRONLY);
 }
 
 static void setup_process(void)
