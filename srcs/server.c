@@ -2,7 +2,6 @@
 
 void remove_client(t_server *server, int client_fd)
 {
-    printf("[ REMOVING ] client: %d\n", client_fd);
     for (int i = 0; i < MAX_CLIENTS + 1; i++) {
         if (server->pfds[i].fd == client_fd) {
             shutdown(server->pfds[i].fd, SHUT_RDWR);
