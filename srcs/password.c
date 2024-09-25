@@ -11,6 +11,7 @@ unsigned char PASSWORD_HASH[SHA256_DIGEST_LENGTH] = {
 void hash_sha256(const char *str, unsigned char output[SHA256_DIGEST_LENGTH]) {
     EVP_MD_CTX *mdctx;
     const EVP_MD *md;
+    unsigned int length;
     
     // Create and initialize the context
     mdctx = EVP_MD_CTX_new();
@@ -18,7 +19,6 @@ void hash_sha256(const char *str, unsigned char output[SHA256_DIGEST_LENGTH]) {
         perror("EVP_MD_CTX_new");
         return;
     }
-
     // Get the SHA256 digest method
     md = EVP_sha256();
     if (md == NULL) {
@@ -26,23 +26,19 @@ void hash_sha256(const char *str, unsigned char output[SHA256_DIGEST_LENGTH]) {
         EVP_MD_CTX_free(mdctx);
         return;
     }
-
     // Initialize the digest operation
     if (EVP_DigestInit_ex(mdctx, md, NULL) != 1) {
         perror("EVP_DigestInit_ex");
         EVP_MD_CTX_free(mdctx);
         return;
     }
-
     // Update the context with the input data
     if (EVP_DigestUpdate(mdctx, str, strlen(str)) != 1) {
         perror("EVP_DigestUpdate");
         EVP_MD_CTX_free(mdctx);
         return;
     }
-
     // Finalize the digest and get the result
-    unsigned int length;
     if (EVP_DigestFinal_ex(mdctx, output, &length) != 1) {
         perror("EVP_DigestFinal_ex");
         EVP_MD_CTX_free(mdctx);
@@ -55,9 +51,3 @@ int check_password(unsigned char *hash1) {
     return memcmp(hash1, PASSWORD_HASH, SHA256_DIGEST_LENGTH) == 0;
 }
 
-void print_hash(unsigned char *hash, size_t length) {
-    for (size_t i = 0; i < length; i++) {
-        printf("%02x", hash[i]);
-    }
-    printf("\n");
-}

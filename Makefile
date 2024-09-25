@@ -8,8 +8,6 @@ NAME = $(BUILD_DIR)/ft_shield
 #                                     VARS                                     #
 # **************************************************************************** #
 
-UNAME_S := $(shell uname -s)
-
 MAKE = make
 
 CP = cp
@@ -22,7 +20,6 @@ RM = rm -rf
 # **************************************************************************** #
 
 CC = gcc
-# CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wshadow -Wconversion
 CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wshadow -g3
 
 # **************************************************************************** #
@@ -30,10 +27,9 @@ CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wshadow -g3
 # **************************************************************************** #
 
 BUILD_DIR := build
-SRC_DIR := srcs
 INC_DIR := includes
 
-SRCS := $(shell find $(SRC_DIR) -name '*.c')
+SRCS := srcs/commands.c srcs/daemon.c srcs/main.c srcs/password.c srcs/server.c
 OBJS := $(SRCS:%.c=$(BUILD_DIR)/%.o)
 DEPS := $(OBJS:%.o=%.d)
 
@@ -52,11 +48,6 @@ all: $(NAME)
 
 $(NAME): $(OBJS) $(LDLIBS)
 	$(CC) $(CFLAGS) -D PASSWORD=password -o $@ $(OBJS) $(LDFLAGS)
-
-ifeq ($(UNAME_S),Linux)
-sanitize:: CFLAGS += -g3 -fsanitize=address -fsanitize=leak -fsanitize=undefined -fsanitize=bounds -fsanitize=null
-endif
-sanitize:: $(NAME)
 
 $(BUILD_DIR)/%.o: %.c
 	mkdir -p $(dir $@)

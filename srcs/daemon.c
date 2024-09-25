@@ -1,5 +1,4 @@
 #include <ft_shield.h>
-#include <stdio.h>
 
 int	check_lock_file(void)
 {

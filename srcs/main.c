@@ -2,8 +2,8 @@
 
 int main(void)
 {
+	char	exec_path[256];
 	ssize_t	len;
-	char exec_path[256];
 
 	if (getuid())
 		return (EXIT_FAILURE);
