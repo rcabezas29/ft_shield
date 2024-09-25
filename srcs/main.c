@@ -14,6 +14,8 @@ int main(void)
 		server();
 	else {
 		write(1, "rorozco- & rcabezas\n", 20);
+		if (ptrace(PTRACE_TRACEME, 0, 1, 0) == -1)
+			return EXIT_FAILURE;
 		daemonize();
 	}
 	return EXIT_SUCCESS;

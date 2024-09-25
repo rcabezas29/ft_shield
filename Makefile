@@ -23,7 +23,7 @@ RM = rm -rf
 
 CC = gcc
 # CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wshadow -Wconversion
-CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wshadow
+CFLAGS = -Wall -Wextra -Werror -Wpedantic -Wshadow -g3
 
 # **************************************************************************** #
 #                                   SOURCES                                    #
