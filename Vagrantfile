@@ -13,7 +13,7 @@ Vagrant.configure("2") do |config|
 		
 		shield_config.vm.provision "shell", inline: <<-SHELL
 			apt update && apt upgrade -y
-			apt install build-essential git binutils -y
+			apt install build-essential git binutils libssl-dev -y
 		SHELL
 	end
 end
