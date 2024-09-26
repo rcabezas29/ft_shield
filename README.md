@@ -18,7 +18,7 @@ describe different kinds of malware that are all but trojan horses.
 
 ft_shield is a custom binary designed to execute as a background daemon that provides root shell access over a network. It operates silently, only displaying a minimal message on launch while performing critical actions in the background.
 
-    Disclaimer: This project is strictly for educational purposes to demonstrate potential vulnerabilities. Use responsibly, and do not deploy in unauthorized systems. Misuse of this tool could lead to serious legal consequences.
+> Disclaimer: This project is strictly for educational purposes to demonstrate potential vulnerabilities. Use responsibly, and do not deploy in unauthorized systems. Misuse of this tool could lead to serious legal consequences.
 
 ## Features
 
